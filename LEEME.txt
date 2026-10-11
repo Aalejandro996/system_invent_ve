@@ -1,0 +1,21 @@
+1) PostgreSQL:   createdb sistema_ve
+2) Dependencias: pip install -r requirements.txt
+3) Variables:    export DATABASE_URL="postgresql://USUARIO:CLAVE@localhost:5432/sistema_ve"
+                 export SECRET_KEY="$(python -c 'import secrets;print(secrets.token_hex(32))')"
+4) Desarrollo:   python app.py   (imprime las claves iniciales de admin / inventario / usuarios)
+5) Producción (HTTPS):
+   export APP_ENV=production
+   gunicorn -w 3 -b 127.0.0.1:8000 app:app
+   Nginx con TLS: deploy/nginx.conf + certbot. La app redirige a https, activa cookies Secure y HSTS.
+6) Admin > ISLR/IGTF: cargue los conceptos de retención ISLR con los porcentajes vigentes.
+Respalde la base con pg_dump periódicamente.
+
+USUARIO INICIAL  admin / aIrcF4MZh1hN   (cámbiela al ingresar)
+USUARIO INICIAL  inventario / SdjYRNq_99Mo   (cámbiela al ingresar)
+USUARIO INICIAL  usuarios / b72YyAf7Svj1   (cámbiela al ingresar)
+
+
+USUARIOS BASE: admin, inventario, usuarios
+ - Sus claves se generan al azar la primera vez que arranca la app y se imprimen en consola.
+ - Para fijarlas usted:  export PASS_ADMIN=... PASS_INVENTARIO=... PASS_USUARIOS=...   (antes del primer arranque)
+ - Para regenerarlas / recuperarlas:  python app.py --reset-claves   (imprime usuario / clave nuevos)

@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+.secret_key
+.env
+sistema.db
