@@ -12,6 +12,10 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 DSN = os.environ.get("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/sistema_ve")
+# Esquema propio: permite compartir una base PostgreSQL con otros proyectos sin chocar con sus tablas.
+SCHEMA = os.environ.get("DB_SCHEMA", "public")
+if not re.fullmatch(r"[a-z_][a-z0-9_]*", SCHEMA): raise SystemExit("DB_SCHEMA inválido")
+OPTS = {"options": f"-c search_path={SCHEMA},public"} if SCHEMA != "public" else {}
 PROD = os.environ.get("APP_ENV") == "production"
 DEMO = os.environ.get("DEMO_MODE") == "1"   # datos ficticios + banner; ver LEEME
 KEYF = os.path.join(BASE, ".secret_key")
@@ -60,7 +64,7 @@ def headers(r):
 
 # ---------- DB (PostgreSQL) ----------
 def db():
-    if "db" not in g: g.db = psycopg.connect(DSN, row_factory=dict_row)
+    if "db" not in g: g.db = psycopg.connect(DSN, row_factory=dict_row, **OPTS)
     return g.db
 
 def q(sql, args=(), one=False):
@@ -98,7 +102,11 @@ create table if not exists pagos(id serial primary key, doc_id int references do
 """
 
 def init_db():
-    with psycopg.connect(DSN, row_factory=dict_row) as c:
+    if SCHEMA != "public":
+        with psycopg.connect(DSN) as c0:
+            c0.execute("select pg_advisory_xact_lock(7002)")
+            c0.execute(f'create schema if not exists "{SCHEMA}"')
+    with psycopg.connect(DSN, row_factory=dict_row, **OPTS) as c:
         c.execute("select pg_advisory_xact_lock(7001)")
         c.execute(SCHEMA)
         if not c.execute("select 1 from users").fetchone():
@@ -146,7 +154,7 @@ def seed_demo(c):
     _seed_doc(c, "venta", 3, "V-20111222-5", "Carlos Rodríguez", "0004", [("D-005", 1, 38), ("D-001", 2, 14)])
 
 def reset_demo():
-    with psycopg.connect(DSN, row_factory=dict_row) as c:
+    with psycopg.connect(DSN, row_factory=dict_row, **OPTS) as c:
         c.execute("truncate pagos, doc_lineas, docs, movimientos, productos, islr_conceptos restart identity cascade")
         seed_demo(c)
 
@@ -589,7 +597,7 @@ if __name__ == "__main__":
     if "--reset-demo" in sys.argv:       # borra los datos y vuelve a cargar los de ejemplo
         reset_demo(); print("Demo restablecida"); sys.exit()
     if "--reset-claves" in sys.argv:   # regenera y muestra las claves de los 3 usuarios base
-        with psycopg.connect(DSN) as c:
+        with psycopg.connect(DSN, **OPTS) as c:
             for u in ("admin", "inventario", "usuarios"):
                 pw = os.environ.get(f"PASS_{u.upper()}") or secrets.token_urlsafe(9)
                 c.execute("update users set clave=%s, activo=true where usuario=%s", (generate_password_hash(pw), u))
