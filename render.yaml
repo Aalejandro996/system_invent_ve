@@ -1,14 +1,9 @@
-# Blueprint de Render: crea la base PostgreSQL y el servicio web.
-databases:
-  - name: sistema-ve-db
-    databaseName: sistema_ve
-    user: sistema_ve
-    plan: free            # la base gratuita expira a los 30 días; use "basic-256mb" para algo estable
-
+# Blueprint de Render: crea solo el servicio web. La base PostgreSQL ya existente se conecta con DATABASE_URL.
 services:
   - type: web
     name: sistema-ve-demo
     runtime: python
+    # region: oregon       # debe coincidir con la región de su base de datos (si no, use la External URL)
     plan: free            # se "duerme" tras 15 min sin tráfico; "starter" lo evita
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn app:app --workers 2 --bind 0.0.0.0:$PORT
@@ -16,10 +11,10 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: 3.12.8
-      - key: DATABASE_URL
-        fromDatabase:
-          name: sistema-ve-db
-          property: connectionString
+      - key: DATABASE_URL     # Render la pedirá al crear: pegue la "Internal Database URL" de su base existente
+        sync: false
+      - key: DB_SCHEMA        # esquema propio dentro de esa base, para no mezclarse con otros proyectos
+        value: sistema_ve
       - key: SECRET_KEY
         generateValue: true
       - key: APP_ENV
