@@ -10,12 +10,20 @@
 6) Admin > ISLR/IGTF: cargue los conceptos de retención ISLR con los porcentajes vigentes.
 Respalde la base con pg_dump periódicamente.
 
-USUARIO INICIAL  admin / aIrcF4MZh1hN   (cámbiela al ingresar)
-USUARIO INICIAL  inventario / SdjYRNq_99Mo   (cámbiela al ingresar)
-USUARIO INICIAL  usuarios / b72YyAf7Svj1   (cámbiela al ingresar)
-
-
 USUARIOS BASE: admin, inventario, usuarios
  - Sus claves se generan al azar la primera vez que arranca la app y se imprimen en consola.
  - Para fijarlas usted:  export PASS_ADMIN=... PASS_INVENTARIO=... PASS_USUARIOS=...   (antes del primer arranque)
  - Para regenerarlas / recuperarlas:  python app.py --reset-claves   (imprime usuario / clave nuevos)
+
+DEMO EN RENDER
+ 1) Suba la carpeta a un repositorio de GitHub (app.py, requirements.txt, render.yaml, .gitignore).
+ 2) Render > New > Blueprint > elija el repositorio. Crea la base de datos y el servicio web.
+ 3) Al terminar el despliegue, abra la URL https://sistema-ve-demo.onrender.com (o la que asigne Render).
+ 4) Las claves de admin / inventario / usuarios están en Render > servicio > Environment (PASS_ADMIN, etc.).
+ 5) Reiniciar los datos de ejemplo: Render > servicio > Shell:  python app.py --reset-demo
+Con DEMO_MODE=1: banner de demostración, datos ficticios precargados, y bloqueados el cambio de claves y la edición de usuarios base.
+
+BASE EXISTENTE EN RENDER (el plan gratuito permite una sola base activa)
+ - render.yaml ya no crea base de datos: en DATABASE_URL pegue la "Internal Database URL" de la base que ya tiene
+   (Render > Postgres > Connect). La app crea su propio esquema "sistema_ve" y no toca otras tablas.
+ - La base y el servicio web deben estar en la misma región; si no, use la "External Database URL".
