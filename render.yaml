@@ -27,5 +27,7 @@ services:
         generateValue: true
       - key: PASS_USUARIOS
         generateValue: true
+      - key: ANTHROPIC_API_KEY   # opcional: activa la interpretación de facturas (clave de la API de Anthropic)
+        sync: false
       # - key: DEMO_SHOW_CREDS   # ponga "1" para mostrar los accesos en la pantalla de ingreso
       #   value: "1"
