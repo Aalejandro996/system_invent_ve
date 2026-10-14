@@ -27,3 +27,26 @@ BASE EXISTENTE EN RENDER (el plan gratuito permite una sola base activa)
  - render.yaml ya no crea base de datos: en DATABASE_URL pegue la "Internal Database URL" de la base que ya tiene
    (Render > Postgres > Connect). La app crea su propio esquema "sistema_ve" y no toca otras tablas.
  - La base y el servicio web deben estar en la misma región; si no, use la "External Database URL".
+
+MÓDULOS DE FINCA 
+ Roles nuevos: "finca" (ganado y operaciones) y "personal" (puestos y asistencia); el admin ve todo. Se crean desde el usuario "usuarios".
+ Módulos: Ganado, Potreros (localización), Pesajes, Traslados (interno / transporte externo / transbordo, con placa, chofer y guía),
+ Sanidad y vacunación (con próxima aplicación y alertas), Insumos, Alimentación (descuenta existencia), Entradas de insumos,
+ Reproducción, Puestos, Empleados y Asistencia (marcar llegada/salida; reporte de tardanzas y horas).
+ Todas las listas se exportan a Excel; también los libros de compras/ventas y los listados de compras y ventas.
+ Las tablas se crean solas al arrancar (prefijo f_). Para agregar otro módulo, añada una entrada en ENT dentro de app.py (sección "Módulos de finca").
+IMPORTAR FACTURAS: Compras/Ventas > Importar factura (PDF o imagen). Requiere la variable ANTHROPIC_API_KEY; opcional ANTHROPIC_MODEL.
+ El sistema interpreta el documento, muestra el formulario lleno y usted corrige y guarda. El archivo no se almacena.
+
+INTEGRACIÓN FINCA + INVENTARIO + COMPRAS/VENTAS (un solo sistema)
+ - Inventario único: los alimentos, sales, medicinas y demás insumos son PRODUCTOS con categoría (General, Alimento, Mineral/Sal,
+   Medicina, Combustible, Insumo, Ganado, Servicio). "Ganado" y "Servicio" no llevan existencia. Ya no hay módulo de insumos aparte:
+   las compras de insumos entran al inventario con la factura de compra.
+ - Alimentación y Sanidad descuentan del inventario general (con su movimiento y costo automático) y avisan si falta existencia.
+ - Venta de ganado: en Ventas > Registrar, use el producto "Ganado en pie" (cantidad = cabezas) y seleccione los animales en
+   "Ganado vendido": al guardar pasan a Vendido. La cantidad facturada debe coincidir con los animales elegidos.
+ - Compra de ganado: use el mismo producto y escriba los aretes en "Ganado comprado": entran al hato como Activos.
+ - Traslados tienen "Nº factura asociada" para ligar el transporte con la venta.
+ - Panel general (admin): ventas y compras del mes, por cobrar/pagar, inventario valorizado, cabezas, costo de alimentación y sanitario.
+ - Menú agrupado: Panel, Comercial, Inventario, Finca, Personal. Cada rol ve solo su grupo.
+ - Las alícuotas de IVA de los productos de ejemplo (alimentos, ganado) son ilustrativas: ajústelas con su contador.
